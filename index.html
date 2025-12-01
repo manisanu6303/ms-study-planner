@@ -1,0 +1,1630 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Study Planner</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#22c55e">
+
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap">
+
+  <style>
+       * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: "Inter", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+
+    body {
+      background: radial-gradient(circle at top, #d1fae5, #ecfdf5 55%, #f9fafb);
+      color: #111827;
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      line-height: 1.5;          /* better readability */
+      font-size: 0.95rem;        /* ~15px, comfortable on mobile */
+    }
+
+    .app {
+      width: 100%;
+      max-width: 480px;
+      background: linear-gradient(145deg, #ffffff, #f0fdf4);
+      box-shadow: 0 14px 35px rgba(15, 23, 42, 0.14);
+      border-radius: 22px;
+      margin: 16px;
+      padding: 16px 16px 24px;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      border: 1px solid rgba(22, 163, 74, 0.08);
+    }
+
+    .app-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+    }
+
+    .app-title {
+      font-size: 1.6rem;
+      font-weight: 700;
+      letter-spacing: 0.02em;
+      color: #065f46;
+    }
+
+    .subtext {
+      font-size: 0.8rem;
+      color: #6b7280;
+    }
+
+    .profile-button {
+      position: relative;
+      width: 42px;
+      height: 42px;
+      border-radius: 50%;
+      border: none;
+      background: radial-gradient(circle at 30% 20%, #bbf7d0, #4ade80);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 600;
+      cursor: pointer;
+      box-shadow: 0 0 0 1px rgba(34, 197, 94, 0.4), 0 4px 10px rgba(22, 163, 74, 0.35);
+    }
+
+    .profile-badge {
+      position: absolute;
+      top: -1px;
+      right: -1px;
+      width: 10px;
+      height: 10px;
+      background: #22c55e;
+      border-radius: 50%;
+      box-shadow: 0 0 0 1px #ecfdf5;
+    }
+
+    .profile-initials {
+      font-size: 0.95rem;
+      color: #064e3b;
+    }
+
+    .summary-card {
+      background: linear-gradient(135deg, #ecfdf5, #f0fdf4);
+      border-radius: 16px;
+      padding: 10px;
+      border: 1px solid rgba(34, 197, 94, 0.2);
+      margin-bottom: 8px;
+    }
+
+    .summary-box-row {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .summary-box {
+      background: #ffffff;
+      border-radius: 12px;
+      border: 1px solid #bbf7d0;
+      padding: 8px;
+      text-align: center;
+      box-shadow: 0 2px 5px rgba(15, 23, 42, 0.04);
+    }
+
+    .summary-box-label {
+      font-size: 0.75rem;
+      color: #4b5563;
+      margin-bottom: 2px;
+    }
+
+    .summary-box-value {
+      font-size: 0.95rem;
+      font-weight: 700;
+      color: #15803d;
+    }
+
+    .grid {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      margin-top: 8px;
+    }
+
+    .card {
+      border-radius: 16px;
+      padding: 12px;
+      border: 1px solid #d1fadf;
+      background: linear-gradient(135deg, #ffffff, #f0fdf4);
+      font-size: 1rem;
+      font-weight: 600;
+      cursor: pointer;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      width: 100%;
+      transition: box-shadow 0.15s ease, transform 0.1s ease, background 0.15s ease, border-color 0.15s ease;
+    }
+
+    .card span {
+      font-size: 0.85rem;
+      color: #6b7280;
+      font-weight: 400;
+    }
+
+    .card:hover {
+      box-shadow: 0 6px 16px rgba(22, 163, 74, 0.18);
+      background: linear-gradient(135deg, #ecfdf5, #dcfce7);
+      border-color: #86efac;
+    }
+
+    .card:active {
+      transform: scale(0.98);
+    }
+
+    .card-primary {
+      background: linear-gradient(135deg, #dcfce7, #ecfdf5);
+      border-color: #4ade80;
+    }
+
+    /* Modal styles */
+           /* BACKDROP covers entire screen */
+    /* === FORCE ALL MODALS TO FULL SCREEN (OVERRIDE ANY OLD STYLES) === */
+    .modal-backdrop {
+      position: fixed !important;
+      top: 0 !important;
+      left: 0 !important;
+      right: 0 !important;
+      bottom: 0 !important;
+      background: rgba(0, 0, 0, 0.40) !important;
+      display: none;
+      z-index: 999 !important;
+    }
+
+    .modal-backdrop[style*="display: flex"],
+    .modal-backdrop[style*="display:flex"],
+    .modal-backdrop[style*="display: block"],
+    .modal-backdrop[style*="display:block"] {
+      display: block !important;
+    }
+
+    .modal {
+      position: fixed !important;
+      top: 0 !important;
+      left: 0 !important;
+      right: 0 !important;
+      bottom: 0 !important;
+      width: 100% !important;
+      height: 100% !important;
+      min-height: 100vh !important;   /* full viewport height */
+      max-width: none !important;
+      max-height: none !important;
+      border-radius: 0 !important;
+      background: linear-gradient(135deg, #e7fff0, #ffffff) !important;
+      padding: 20px 18px 24px !important;
+      overflow-y: auto !important;
+      box-shadow: none !important;
+      border: none !important;
+      animation: slideUp-full 0.25s ease-out;
+    }
+
+    @keyframes slideUp-full {
+      from {
+        transform: translateY(40px);
+        opacity: 0;
+      }
+      to {
+        transform: translateY(0);
+        opacity: 1;
+      }
+    }
+}
+
+
+
+    /* extra tweak for very small mobiles */
+    @media (max-width: 480px) {
+      .modal-backdrop {
+        padding: 16px;
+      }
+      .modal {
+        max-height: 75vh;
+      }
+    }
+
+
+    .modal-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 12px;
+    }
+
+    .modal-title {
+      font-size: 1.2rem;
+      font-weight: 700;
+      color: #065f46;
+    }
+
+    .close-btn {
+      border: none;
+      background: transparent;
+      font-size: 1.2rem;
+      cursor: pointer;
+      color: #6b7280;
+    }
+
+    .form-group {
+      margin-bottom: 10px;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+        label {
+      font-size: 0.9rem;      /* was 0.8rem */
+      font-weight: 500;
+      color: #111827;
+    }
+
+    input, select, textarea {
+      padding: 9px 11px;
+      border-radius: 9px;
+      border: 1px solid #d1d5db;
+      font-size: 0.95rem;     /* was 0.85rem */
+      resize: vertical;
+      background: #ffffff;
+    }
+
+
+    textarea {
+      min-height: 70px;
+    }
+
+    input:focus, select:focus, textarea:focus {
+      outline: none;
+      border-color: #22c55e;
+      box-shadow: 0 0 0 1px rgba(34, 197, 94, 0.25);
+    }
+
+    .btn {
+      border-radius: 999px;
+      border: none;
+      padding: 9px 14px;
+      font-size: 0.9rem;
+      font-weight: 500;
+      cursor: pointer;
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, #22c55e, #16a34a);
+      color: white;
+      width: 100%;
+      margin-top: 4px;
+      box-shadow: 0 4px 10px rgba(22, 163, 74, 0.35);
+    }
+
+    .btn-secondary {
+      background: #e6f5eb;
+      color: #166534;
+      width: 100%;
+      margin-top: 4px;
+    }
+
+    .small-hint {
+      font-size: 0.8rem;
+      color: #64748b;
+      margin-top: 4px;
+    }
+
+    /* Topics list */
+    .topics-summary {
+      font-size: 0.9rem;
+      margin-bottom: 8px;
+      color: #4b5563;
+    }
+
+    .topics-list {
+      margin-top: 8px;
+      border-top: 1px solid #e5e7eb;
+      padding-top: 8px;
+      max-height: 260px;
+      overflow-y: auto;
+    }
+
+    .topic-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      padding: 6px 0;
+      border-bottom: 1px dashed #e5e7eb;
+    }
+
+    .topic-name {
+      font-size: 0.95rem;
+      font-weight: 500;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .topic-status-select {
+      font-size: 0.8rem;
+      min-width: 140px;
+    }
+
+    .empty-text {
+      font-size: 0.8rem;
+      color: #6b7280;
+      margin-top: 6px;
+    }
+
+    /* Daily planner */
+    .planner-header-text {
+      font-size: 0.8rem;
+      color: #4b5563;
+      margin-bottom: 4px;
+    }
+
+    .planner-add-row {
+      display: flex;
+      gap: 6px;
+      margin: 8px 0;
+    }
+
+    .planner-add-row input {
+      flex: 1;
+    }
+
+    .planner-add-btn {
+      white-space: nowrap;
+      padding-inline: 10px;
+    }
+
+    .planner-list {
+      border-top: 1px solid #e5e7eb;
+      padding-top: 6px;
+      max-height: 260px;
+      overflow-y: auto;
+    }
+
+    .planner-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      padding: 4px 0;
+      border-bottom: 1px dashed #e5e7eb;
+    }
+
+    .planner-left {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      flex: 1;
+      min-width: 0;
+    }
+
+    .planner-left input[type="checkbox"] {
+      width: 16px;
+      height: 16px;
+    }
+
+    .planner-text {
+      font-size: 1rem;
+      font-weight: 600;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .planner-text.done {
+      text-decoration: line-through;
+      color: #9ca3af;
+      font-weight: 500;
+    }
+
+    .planner-actions {
+      display: flex;
+      gap: 4px;
+      align-items: center;
+    }
+
+    .planner-edit,
+    .planner-delete {
+      font-size: 0.75rem;
+      border: none;
+      background: transparent;
+      cursor: pointer;
+    }
+
+    .planner-edit {
+      color: #16a34a;
+    }
+
+    .planner-delete {
+      color: #9ca3af;
+    }
+
+    .planner-empty {
+      font-size: 0.8rem;
+      color: #6b7280;
+      margin-top: 6px;
+    }
+
+    /* Monthly plan */
+    .month-header-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      align-items: center;
+      margin-bottom: 8px;
+      font-size: 0.8rem;
+    }
+
+    .month-note {
+      font-size: 0.75rem;
+      color: #6b7280;
+    }
+
+    .month-add-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin: 8px 0;
+    }
+
+    .month-add-row input[type="text"] {
+      flex: 1;
+    }
+
+    .month-list {
+      border-top: 1px solid #e5e7eb;
+      padding-top: 6px;
+      max-height: 260px;
+      overflow-y: auto;
+      font-size: 0.8rem;
+    }
+
+    .month-day-block {
+      margin-bottom: 6px;
+      padding-bottom: 4px;
+      border-bottom: 1px dashed #e5e7eb;
+    }
+
+    .month-day-title {
+     font-size: 1rem; 
+     font-weight: 600;
+      margin-bottom: 2px;
+      color: #065f46;
+    }
+
+    .month-task {
+      padding-left: 8px;
+      margin-bottom: 2px;
+      font-size: 0.9rem;
+      color: #374151;
+    }
+
+    /* Reminders */
+    .reminder-list {
+      border-top: 1px solid #e5e7eb;
+      padding-top: 6px;
+      max-height: 260px;
+      overflow-y: auto;
+      font-size: 0.8rem;
+    }
+
+    .reminder-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 4px 0;
+      border-bottom: 1px dashed #e5e7eb;
+    }
+
+    .reminder-main {
+      display: flex;
+      flex-direction: column;
+      max-width: 75%;
+    }
+
+    .reminder-title {
+      font-size: 1rem;
+      font-weight: 600;
+      white-space: nowrap;
+      text-overflow: ellipsis;
+      overflow: hidden;
+    }
+
+    .reminder-date {
+      font-size: 0.85rem;
+      color: #64748b;
+    }
+
+    .reminder-delete {
+      border: none;
+      background: transparent;
+      font-size: 0.8rem;
+      color: #9ca3af;
+      cursor: pointer;
+    }
+
+    /* Notes (notepad style) */
+    .note-editor {
+      border-radius: 12px;
+      border: 1px solid #bfedd2;
+      background: linear-gradient(135deg, #f1fdf6, #ffffff);
+      padding: 6px;
+      margin-bottom: 8px;
+    }
+
+    #noteEditor {
+      width: 100%;
+      min-height: 120px;
+      border: none;
+      background: transparent;
+      resize: vertical;
+      font-size: 0.85rem;
+      line-height: 1.4;
+      color: #111827;
+    }
+
+    #noteEditor:focus {
+      outline: none;
+    }
+
+    .note-toolbar {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 6px;
+    }
+
+    .note-toolbar .btn {
+      flex: 1;
+      padding-block: 7px;
+      font-size: 0.85rem;
+    }
+
+    .btn-ghost {
+      border-radius: 999px;
+      border: 1px solid #c4e3cf;
+      background: #f8fffb;
+      color: #166534;
+    }
+
+    .notes-list {
+      border-top: 1px solid #e5e7eb;
+      padding-top: 6px;
+      max-height: 220px;
+      overflow-y: auto;
+      font-size: 0.8rem;
+    }
+
+    .note-item {
+      padding: 6px 0;
+      border-bottom: 1px dashed #e5e7eb;
+      display: flex;
+      justify-content: space-between;
+      gap: 8px;
+      cursor: pointer;
+    }
+
+    .note-item-main {
+      max-width: 80%;
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+
+    .note-preview {
+      font-size: 0.95rem;
+      color: #374151;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .note-meta {
+      font-size: 0.8rem;
+      color: #9ca3af;
+    }
+
+    .note-delete {
+      border: none;
+      background: transparent;
+      font-size: 0.8rem;
+      color: #9ca3af;
+      cursor: pointer;
+    }
+
+    .note-item.active {
+      background: #ecfdf3;
+      border-radius: 8px;
+      padding-inline: 6px;
+    }
+
+    /* Topic daily reminder */
+    .config-text {
+      font-size: 0.85rem;
+      color: #4b5563;
+      margin-top: 6px;
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <header class="app-header">
+      <div>
+        <div class="app-title">MS Study Planner</div>
+        <div class="subtext" id="subtitle">Setup your profile to begin</div>
+      </div>
+      <button class="profile-button" id="profileButton">
+        <div class="profile-initials" id="profileInitials">MS</div>
+        <div class="profile-badge" id="profileBadge"></div>
+      </button>
+    </header>
+
+    <section class="summary-card" id="summaryCard" style="display:none;">
+      <div class="summary-box-row">
+        <div class="summary-box">
+          <div class="summary-box-label">Exam Date</div>
+          <div class="summary-box-value" id="summaryExamDate">-</div>
+        </div>
+        <div class="summary-box">
+          <div class="summary-box-label">Days Left</div>
+          <div class="summary-box-value" id="daysLeft">-</div>
+        </div>
+      </div>
+    </section>
+
+    <section id="cardsSection" style="display:none;">
+      <div class="grid">
+        <div class="card card-primary" id="dailyPlannerCard">
+          Daily Planner
+          <span>Plan today’s topics and tasks</span>
+        </div>
+        <div class="card" id="monthlyPlanCard">
+          Monthly Plan
+          <span>Plan topics for each exam day</span>
+        </div>
+        <div class="card" id="addTopicsCard">
+          Add Subjects / Topics
+          <span>Business Expenses, Depreciation, Schedule E…</span>
+        </div>
+        <div class="card" id="remindersCard">
+          Reminders
+          <span>Set study reminders for key days</span>
+        </div>
+        <div class="card" id="notesCard">
+          Take Notes
+          <span>Quick notepad for important points</span>
+        </div>
+        <div class="card" id="topicsReminderCard">
+          Topics Daily Reminder
+          <span>Notify daily topics to cover</span>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <!-- Profile Modal -->
+  <div class="modal-backdrop" id="profileModal">
+    <div class="modal">
+      <div class="modal-header">
+        <div class="modal-title">Profile</div>
+        <button class="close-btn" id="closeProfileModal">&times;</button>
+      </div>
+
+      <form id="profileForm">
+        <div class="form-group">
+          <label for="name">Name *</label>
+          <input id="name" type="text" required />
+        </div>
+
+        <div class="form-group">
+          <label for="mobile">Mobile Number</label>
+          <input id="mobile" type="tel" />
+        </div>
+
+        <div class="form-group">
+          <label for="email">Mail ID</label>
+          <input id="email" type="email" />
+        </div>
+
+        <div class="form-group">
+          <label for="examName">Course / Exam</label>
+          <input id="examName" type="text" placeholder="Course Name" />
+        </div>
+
+        <div class="form-group">
+          <label for="examSubject">Exam Subject Name</label>
+          <input id="examSubject" type="text" placeholder="Subject Name" />
+        </div>
+
+        <div class="form-group">
+          <label for="examDate">Exam Date</label>
+          <input id="examDate" type="date" />
+        </div>
+
+        <button type="submit" class="btn btn-primary">Save</button>
+        <button type="button" class="btn btn-secondary" id="logoutBtn">
+          Logout
+        </button>
+
+        <div class="small-hint">
+          Details are saved on this device and stay even if you close the app, until you press Logout or clear browser data.
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Topics Modal -->
+  <div class="modal-backdrop" id="topicsModal">
+    <div class="modal">
+      <div class="modal-header">
+        <div class="modal-title">Subjects / Chapters / Topics</div>
+        <button class="close-btn" id="closeTopicsModal">&times;</button>
+      </div>
+
+      <form id="topicForm">
+        <div class="form-group">
+          <label for="topicSubject">Subject / Chapter (optional)</label>
+          <input id="topicSubject" type="text" placeholder="e.g. Business Entities" />
+        </div>
+
+        <div class="form-group">
+          <label for="topicName">Topic name *</label>
+          <input id="topicName" type="text" placeholder="e.g. Business Expenses" required />
+        </div>
+
+        <button type="submit" class="btn btn-primary">Add Topic</button>
+        <div class="small-hint">
+          Example topics: Business Expenses, Depreciation, Property Income (Schedule E)
+        </div>
+      </form>
+
+      <div class="topics-summary" id="topicsSummary">
+        No topics added yet. Start by adding a topic above.
+      </div>
+
+      <div class="topics-list" id="topicsList"></div>
+    </div>
+  </div>
+
+  <!-- Daily Planner Modal (today only) -->
+  <div class="modal-backdrop" id="plannerModal">
+    <div class="modal">
+      <div class="modal-header">
+        <div class="modal-title">Daily Planner</div>
+        <button class="close-btn" id="closePlannerModal">&times;</button>
+      </div>
+
+      <div class="planner-header-text" id="plannerDateLabel"></div>
+
+      <div class="small-hint">
+        Add today’s topics or tasks (e.g. “Business Expenses”, “50 MCQs for Schedule E”).
+      </div>
+
+      <div class="planner-add-row">
+        <input id="plannerTaskInput" type="text" placeholder="Add topic / task..." />
+        <button type="button" class="btn planner-add-btn" id="plannerAddBtn">Add</button>
+      </div>
+
+      <div id="plannerList" class="planner-list"></div>
+    </div>
+  </div>
+
+  <!-- Monthly Plan Modal -->
+  <div class="modal-backdrop" id="monthlyModal">
+    <div class="modal">
+      <div class="modal-header">
+        <div class="modal-title">Monthly Plan</div>
+        <button class="close-btn" id="closeMonthlyModal">&times;</button>
+      </div>
+
+      <div class="month-header-row">
+        <div><strong>Exam date:</strong>&nbsp;<span id="monthlyExamDateLabel">Not set</span></div>
+        <div class="month-note">
+          You can plan only up to the exam date.
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label for="monthlyDate">Select date (up to exam date)</label>
+        <input id="monthlyDate" type="date" />
+      </div>
+
+      <div class="month-add-row">
+        <input id="monthlyTaskInput" type="text" placeholder="Topic / task for that day..." />
+        <button type="button" class="btn planner-add-btn" id="monthlyAddBtn">Add to that day</button>
+      </div>
+
+      <div class="small-hint">
+        You can add 5 or more topics per day here. These will appear automatically in the Daily Planner for that date.
+      </div>
+
+      <div id="monthList" class="month-list"></div>
+    </div>
+  </div>
+
+  <!-- Reminders Modal -->
+  <div class="modal-backdrop" id="remindersModal">
+    <div class="modal">
+      <div class="modal-header">
+        <div class="modal-title">Reminders</div>
+        <button class="close-btn" id="closeRemindersModal">&times;</button>
+      </div>
+
+      <div class="form-group">
+        <label for="reminderDate">Reminder date</label>
+        <input id="reminderDate" type="date" />
+      </div>
+
+      <div class="form-group">
+        <label for="reminderTitle">Title *</label>
+        <input id="reminderTitle" type="text" placeholder="Mock test, Revision day..." />
+      </div>
+
+      <div class="form-group">
+        <label for="reminderNote">Note (optional)</label>
+        <textarea id="reminderNote" rows="2" placeholder="Extra details for this reminder"></textarea>
+      </div>
+
+      <button type="button" class="btn btn-primary" id="addReminderBtn">Add Reminder</button>
+      <div class="small-hint">
+        These are simple reminders stored on this device. You’ll see them here whenever you open the app.
+      </div>
+
+      <div id="remindersList" class="reminder-list"></div>
+    </div>
+  </div>
+
+  <!-- Notes Modal (Notepad style) -->
+  <div class="modal-backdrop" id="notesModal">
+    <div class="modal">
+      <div class="modal-header">
+        <div class="modal-title">Take Notes</div>
+        <button class="close-btn" id="closeNotesModal">&times;</button>
+      </div>
+
+      <div class="note-editor">
+        <textarea id="noteEditor" placeholder="Write your notes here..."></textarea>
+      </div>
+
+      <div class="note-toolbar">
+        <button type="button" class="btn btn-ghost" id="newNoteBtn">New Note</button>
+        <button type="button" class="btn btn-primary" id="saveNoteBtn">Save Note</button>
+      </div>
+
+      <div class="small-hint">
+        Tap a note from the list below to view & edit. Save will update the selected note or create a new one.
+      </div>
+
+      <div id="notesList" class="notes-list"></div>
+    </div>
+  </div>
+
+  <!-- Topics Daily Reminder Modal -->
+  <div class="modal-backdrop" id="topicsReminderModal">
+    <div class="modal">
+      <div class="modal-header">
+        <div class="modal-title">Topics Daily Reminder</div>
+        <button class="close-btn" id="closeTopicsReminderModal">&times;</button>
+      </div>
+
+      <div class="form-group">
+        <label for="topicReminderTime">Reminder time (daily)</label>
+        <input id="topicReminderTime" type="time" />
+      </div>
+
+      <div class="form-group">
+        <label for="topicReminderText">Topics to remind every day</label>
+        <textarea id="topicReminderText" rows="3" placeholder="Example: Business Expenses, Depreciation, Schedule E"></textarea>
+      </div>
+
+      <button type="button" class="btn btn-primary" id="saveTopicsReminderBtn">Save Daily Reminder</button>
+      <div class="config-text" id="topicsReminderSummary">
+        No daily topic reminder configured yet.
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const PROFILE_STORAGE_KEY = "studyPlannerProfile";
+    const TOPICS_STORAGE_KEY = "studyPlannerTopics";
+    const PLANS_STORAGE_KEY = "studyPlannerDailyPlans";
+    const REMINDERS_STORAGE_KEY = "studyPlannerReminders";
+    const NOTES_STORAGE_KEY = "studyPlannerNotes";
+    const TOPIC_DAILY_REMINDER_KEY = "studyPlannerTopicDailyReminder";
+
+    const profileButton = document.getElementById("profileButton");
+    const profileBadge = document.getElementById("profileBadge");
+    const profileInitials = document.getElementById("profileInitials");
+
+    const profileModal = document.getElementById("profileModal");
+    const closeProfileModal = document.getElementById("closeProfileModal");
+    const profileForm = document.getElementById("profileForm");
+    const logoutBtn = document.getElementById("logoutBtn");
+
+    const subtitle = document.getElementById("subtitle");
+    const summaryCard = document.getElementById("summaryCard");
+    const cardsSection = document.getElementById("cardsSection");
+
+    const summaryExamDateEl = document.getElementById("summaryExamDate");
+    const daysLeftEl = document.getElementById("daysLeft");
+
+    const nameInput = document.getElementById("name");
+    const mobileInput = document.getElementById("mobile");
+    const emailInput = document.getElementById("email");
+    const examNameInput = document.getElementById("examName");
+    const examSubjectInput = document.getElementById("examSubject");
+    const examDateInput = document.getElementById("examDate");
+
+    const addTopicsCard = document.getElementById("addTopicsCard");
+    const topicsModal = document.getElementById("topicsModal");
+    const closeTopicsModal = document.getElementById("closeTopicsModal");
+    const topicForm = document.getElementById("topicForm");
+    const topicSubjectInput = document.getElementById("topicSubject");
+    const topicNameInput = document.getElementById("topicName");
+    const topicsSummary = document.getElementById("topicsSummary");
+    const topicsList = document.getElementById("topicsList");
+
+    const dailyPlannerCard = document.getElementById("dailyPlannerCard");
+    const plannerModal = document.getElementById("plannerModal");
+    const closePlannerModal = document.getElementById("closePlannerModal");
+    const plannerTaskInput = document.getElementById("plannerTaskInput");
+    const plannerAddBtn = document.getElementById("plannerAddBtn");
+    const plannerList = document.getElementById("plannerList");
+    const plannerDateLabel = document.getElementById("plannerDateLabel");
+
+    const monthlyPlanCard = document.getElementById("monthlyPlanCard");
+    const monthlyModal = document.getElementById("monthlyModal");
+    const closeMonthlyModal = document.getElementById("closeMonthlyModal");
+    const monthlyDateInput = document.getElementById("monthlyDate");
+    const monthlyTaskInput = document.getElementById("monthlyTaskInput");
+    const monthlyAddBtn = document.getElementById("monthlyAddBtn");
+    const monthList = document.getElementById("monthList");
+    const monthlyExamDateLabel = document.getElementById("monthlyExamDateLabel");
+
+    const remindersCard = document.getElementById("remindersCard");
+    const remindersModal = document.getElementById("remindersModal");
+    const closeRemindersModal = document.getElementById("closeRemindersModal");
+    const reminderDateInput = document.getElementById("reminderDate");
+    const reminderTitleInput = document.getElementById("reminderTitle");
+    const reminderNoteInput = document.getElementById("reminderNote");
+    const addReminderBtn = document.getElementById("addReminderBtn");
+    const remindersList = document.getElementById("remindersList");
+
+    const notesCard = document.getElementById("notesCard");
+    const notesModal = document.getElementById("notesModal");
+    const closeNotesModal = document.getElementById("closeNotesModal");
+    const noteEditor = document.getElementById("noteEditor");
+    const newNoteBtn = document.getElementById("newNoteBtn");
+    const saveNoteBtn = document.getElementById("saveNoteBtn");
+    const notesList = document.getElementById("notesList");
+
+    const topicsReminderCard = document.getElementById("topicsReminderCard");
+    const topicsReminderModal = document.getElementById("topicsReminderModal");
+    const closeTopicsReminderModal = document.getElementById("closeTopicsReminderModal");
+    const topicReminderTimeInput = document.getElementById("topicReminderTime");
+    const topicReminderTextInput = document.getElementById("topicReminderText");
+    const saveTopicsReminderBtn = document.getElementById("saveTopicsReminderBtn");
+    const topicsReminderSummary = document.getElementById("topicsReminderSummary");
+
+    let topics = [];
+    let dailyPlans = {};
+    let reminders = [];
+    let notes = [];
+    let topicDailyReminder = null;
+    let currentNoteId = null;
+
+    /* Helper: format date as dd/mm/yyyy */
+    function formatDateDDMMYYYY(isoStr) {
+      if (!isoStr) return "";
+      const parts = isoStr.split("-");
+      if (parts.length !== 3) return isoStr;
+      const [y, m, d] = parts;
+      return `${d}/${m}/${y}`;
+    }
+
+    /* ===== Profile ===== */
+    function openProfileModal() {
+      profileModal.style.display = "flex";
+    }
+    function closeProfile() {
+      profileModal.style.display = "none";
+    }
+    profileButton.addEventListener("click", openProfileModal);
+    closeProfileModal.addEventListener("click", closeProfile);
+    profileModal.addEventListener("click", (e) => {
+      if (e.target === profileModal) closeProfile();
+    });
+
+    function calculateDaysLeft(examDateStr) {
+      if (!examDateStr) return null;
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      const examDate = new Date(examDateStr);
+      if (isNaN(examDate.getTime())) return null;
+      examDate.setHours(0, 0, 0, 0);
+      const diffMs = examDate - today;
+      return Math.round(diffMs / (1000 * 60 * 60 * 24));
+    }
+
+    function applyLoggedOutUI() {
+      subtitle.textContent = "You are logged out. Open profile to sign up.";
+      profileBadge.style.display = "block";
+      summaryCard.style.display = "none";
+      cardsSection.style.display = "none";
+      summaryExamDateEl.textContent = "-";
+      daysLeftEl.textContent = "-";
+    }
+
+    function loadProfile() {
+      const raw = localStorage.getItem(PROFILE_STORAGE_KEY);
+      if (!raw) {
+        applyLoggedOutUI();
+        return;
+      }
+      try {
+        const data = JSON.parse(raw);
+        nameInput.value = data.name || "";
+        mobileInput.value = data.mobile || "";
+        emailInput.value = data.email || "";
+        examNameInput.value = data.examName || "";
+        examSubjectInput.value = data.examSubject || "";
+        examDateInput.value = data.examDate || "";
+
+        const initials = (data.name || "MS")
+          .split(" ")
+          .filter(Boolean)
+          .map((part) => part[0].toUpperCase())
+          .slice(0, 2)
+          .join("");
+        profileInitials.textContent = initials || "MS";
+
+        profileBadge.style.display = "none";
+
+        const formattedExamDate = data.examDate ? formatDateDDMMYYYY(data.examDate) : "-";
+        summaryExamDateEl.textContent = formattedExamDate;
+        const daysLeft = calculateDaysLeft(data.examDate);
+        daysLeftEl.textContent = daysLeft !== null ? daysLeft : "—";
+
+        subtitle.textContent = "Plan and track your exam preparation";
+        summaryCard.style.display = "block";
+        cardsSection.style.display = "block";
+      } catch (err) {
+        console.error("Failed to parse profile:", err);
+        localStorage.removeItem(PROFILE_STORAGE_KEY);
+        applyLoggedOutUI();
+      }
+    }
+
+    profileForm.addEventListener("submit", (e) => {
+      e.preventDefault();
+      const data = {
+        name: nameInput.value.trim(),
+        mobile: mobileInput.value.trim(),
+        email: emailInput.value.trim(),
+        examName: examNameInput.value.trim(),
+        examSubject: examSubjectInput.value.trim(),
+        examDate: examDateInput.value,
+      };
+      localStorage.setItem(PROFILE_STORAGE_KEY, JSON.stringify(data));
+      loadProfile();
+      closeProfile();
+    });
+
+    function logout() {
+      if (confirm("Logout and hide your saved profile?")) {
+        localStorage.removeItem(PROFILE_STORAGE_KEY);
+        applyLoggedOutUI();
+        nameInput.value = "";
+        mobileInput.value = "";
+        emailInput.value = "";
+        examNameInput.value = "";
+        examSubjectInput.value = "";
+        examDateInput.value = "";
+      }
+    }
+    logoutBtn.addEventListener("click", logout);
+
+    /* ===== Topics ===== */
+    function openTopics() {
+      topicsModal.style.display = "flex";
+      renderTopics();
+    }
+    function closeTopics() {
+      topicsModal.style.display = "none";
+    }
+    addTopicsCard.addEventListener("click", openTopics);
+    closeTopicsModal.addEventListener("click", closeTopics);
+    topicsModal.addEventListener("click", (e) => {
+      if (e.target === topicsModal) closeTopics();
+    });
+
+    function loadTopics() {
+      const raw = localStorage.getItem(TOPICS_STORAGE_KEY);
+      if (!raw) { topics = []; return; }
+      try { topics = JSON.parse(raw) || []; } catch { topics = []; }
+    }
+    function saveTopics() {
+      localStorage.setItem(TOPICS_STORAGE_KEY, JSON.stringify(topics));
+    }
+    function renderTopics() {
+      if (!topics.length) {
+        topicsSummary.textContent = "No topics added yet. Start by adding a topic above.";
+        topicsList.innerHTML =
+          '<div class="empty-text">Example: Business Expenses, Depreciation, Property Income (Schedule E)</div>';
+        return;
+      }
+      const total = topics.length;
+      const completed = topics.filter(t => t.status === "completed").length;
+      const inProgress = topics.filter(t => t.status === "in_progress").length;
+      const notStarted = topics.filter(t => t.status === "not_started").length;
+      const percent = Math.round((completed / total) * 100);
+
+      topicsSummary.textContent =
+        `Total topics: ${total} | Completed: ${completed} | In progress: ${inProgress} | Not started: ${notStarted} | Approx. ${percent}% done`;
+
+      topicsList.innerHTML = topics.map(t => `
+        <div class="topic-row">
+          <div class="topic-name">${t.name}</div>
+          <select class="topic-status-select" data-id="${t.id}">
+            <option value="not_started" ${t.status === "not_started" ? "selected" : ""}>Not started</option>
+            <option value="in_progress" ${t.status === "in_progress" ? "selected" : ""}>In progress</option>
+            <option value="completed" ${t.status === "completed" ? "selected" : ""}>Completed ✔</option>
+          </select>
+        </div>
+      `).join("");
+    }
+
+    topicForm.addEventListener("submit", (e) => {
+      e.preventDefault();
+      const name = topicNameInput.value.trim();
+      const subject = topicSubjectInput.value.trim();
+      if (!name) return;
+      topics.push({
+        id: Date.now().toString(),
+        name,
+        subject,
+        status: "not_started",
+      });
+      saveTopics();
+      topicNameInput.value = "";
+      renderTopics();
+    });
+
+    topicsList.addEventListener("change", (e) => {
+      const target = e.target;
+      if (!target.classList.contains("topic-status-select")) return;
+      const id = target.getAttribute("data-id");
+      const topic = topics.find(t => t.id === id);
+      if (topic) {
+        topic.status = target.value;
+        saveTopics();
+        renderTopics();
+      }
+    });
+
+    /* ===== Daily Planner ===== */
+    function loadPlans() {
+      const raw = localStorage.getItem(PLANS_STORAGE_KEY);
+      if (!raw) { dailyPlans = {}; return; }
+      try { dailyPlans = JSON.parse(raw) || {}; } catch { dailyPlans = {}; }
+    }
+    function savePlans() {
+      localStorage.setItem(PLANS_STORAGE_KEY, JSON.stringify(dailyPlans));
+    }
+    function getTodayISO() {
+      const today = new Date();
+      const yyyy = today.getFullYear();
+      const mm = String(today.getMonth() + 1).padStart(2, "0");
+      const dd = String(today.getDate()).padStart(2, "0");
+      return `${yyyy}-${mm}-${dd}`;
+    }
+
+    function openPlanner() {
+      plannerModal.style.display = "flex";
+      const today = getTodayISO();
+      const todayFormatted = formatDateDDMMYYYY(today);
+      plannerDateLabel.textContent = "Plan for Today (" + todayFormatted + ")";
+      renderPlanForDate(today);
+    }
+    function closePlanner() {
+      plannerModal.style.display = "none";
+    }
+    dailyPlannerCard.addEventListener("click", openPlanner);
+    closePlannerModal.addEventListener("click", closePlanner);
+    plannerModal.addEventListener("click", (e) => {
+      if (e.target === plannerModal) closePlanner();
+    });
+
+    function renderPlanForDate(dateStr) {
+      const tasks = dailyPlans[dateStr] || [];
+      if (!tasks.length) {
+        plannerList.innerHTML =
+          '<div class="planner-empty">No tasks added for today. Add topics using the box above or via Monthly Plan.</div>';
+        return;
+      }
+      plannerList.innerHTML = tasks.map(task => `
+        <div class="planner-item" data-id="${task.id}">
+          <div class="planner-left">
+            <input type="checkbox" class="planner-checkbox" ${task.done ? "checked" : ""} />
+            <div class="planner-text ${task.done ? "done" : ""}">${task.text}</div>
+          </div>
+          <div class="planner-actions">
+            <button class="planner-edit" type="button">Edit</button>
+            <button class="planner-delete" type="button" title="Remove task">✕</button>
+          </div>
+        </div>
+      `).join("");
+    }
+
+    plannerAddBtn.addEventListener("click", () => {
+      const text = plannerTaskInput.value.trim();
+      const date = getTodayISO();
+      if (!text) return;
+      const task = { id: Date.now().toString(), text, done: false };
+      if (!dailyPlans[date]) dailyPlans[date] = [];
+      dailyPlans[date].push(task);
+      savePlans();
+      plannerTaskInput.value = "";
+      renderPlanForDate(date);
+    });
+    plannerTaskInput.addEventListener("keydown", (e) => {
+      if (e.key === "Enter") {
+        e.preventDefault();
+        plannerAddBtn.click();
+      }
+    });
+
+    plannerList.addEventListener("click", (e) => {
+      const target = e.target;
+      const itemEl = target.closest(".planner-item");
+      if (!itemEl) return;
+      const id = itemEl.getAttribute("data-id");
+      const date = getTodayISO();
+      const tasks = dailyPlans[date] || [];
+
+      if (target.classList.contains("planner-delete")) {
+        dailyPlans[date] = tasks.filter(t => t.id !== id);
+        savePlans();
+        renderPlanForDate(date);
+      } else if (target.classList.contains("planner-checkbox")) {
+        const task = tasks.find(t => t.id === id);
+        if (task) {
+          task.done = target.checked;
+          savePlans();
+          renderPlanForDate(date);
+        }
+      } else if (target.classList.contains("planner-edit")) {
+        const task = tasks.find(t => t.id === id);
+        if (task) {
+          const newText = prompt("Edit task:", task.text);
+          if (newText !== null) {
+            task.text = newText.trim() || task.text;
+            savePlans();
+            renderPlanForDate(date);
+          }
+        }
+      }
+    });
+
+    /* ===== Monthly Plan ===== */
+    function openMonthly() {
+      const examDateStr = examDateInput.value;
+      if (!examDateStr) {
+        alert("Please set your exam date in the Profile first.");
+        return;
+      }
+      monthlyModal.style.display = "flex";
+      monthlyExamDateLabel.textContent = formatDateDDMMYYYY(examDateStr);
+      monthlyDateInput.max = examDateStr;
+
+      const today = getTodayISO();
+      monthlyDateInput.value = today > examDateStr ? examDateStr : today;
+      renderMonthlyOverview();
+    }
+    function closeMonthly() {
+      monthlyModal.style.display = "none";
+    }
+    monthlyPlanCard.addEventListener("click", openMonthly);
+    closeMonthlyModal.addEventListener("click", closeMonthly);
+    monthlyModal.addEventListener("click", (e) => {
+      if (e.target === monthlyModal) closeMonthly();
+    });
+
+    monthlyAddBtn.addEventListener("click", () => {
+      const text = monthlyTaskInput.value.trim();
+      const date = monthlyDateInput.value;
+      const examDateStr = examDateInput.value;
+      if (!examDateStr) {
+        alert("Please set your exam date in the Profile first.");
+        return;
+      }
+      if (!date) {
+        alert("Please select a date.");
+        return;
+      }
+      if (date > examDateStr) {
+        alert("You can only plan up to the exam date (" + formatDateDDMMYYYY(examDateStr) + ").");
+        return;
+      }
+      if (!text) return;
+
+      const task = { id: Date.now().toString(), text, done: false };
+      if (!dailyPlans[date]) dailyPlans[date] = [];
+      dailyPlans[date].push(task);
+      savePlans();
+      monthlyTaskInput.value = "";
+      renderMonthlyOverview();
+    });
+
+    function renderMonthlyOverview() {
+      const examDateStr = examDateInput.value;
+      const allDates = Object.keys(dailyPlans || {});
+      if (!allDates.length) {
+        monthList.innerHTML =
+          '<div class="empty-text">No days planned yet. Add a topic above to start your monthly plan.</div>';
+        return;
+      }
+      const validDates = allDates.filter(d => !examDateStr || d <= examDateStr).sort();
+      if (!validDates.length) {
+        monthList.innerHTML =
+          '<div class="empty-text">No planned days up to the exam date.</div>';
+        return;
+      }
+      monthList.innerHTML = validDates.map(d => {
+        const tasks = dailyPlans[d] || [];
+        if (!tasks.length) return "";
+        const taskLines = tasks.map(t => `<div class="month-task">• ${t.text}</div>`).join("");
+        const displayDate = formatDateDDMMYYYY(d);
+        return `
+          <div class="month-day-block">
+            <div class="month-day-title">${displayDate} (${tasks.length} task${tasks.length > 1 ? "s" : ""})</div>
+            ${taskLines}
+          </div>
+        `;
+      }).join("") || '<div class="empty-text">No planned tasks yet.</div>';
+    }
+
+    /* ===== Reminders ===== */
+    function loadReminders() {
+      const raw = localStorage.getItem(REMINDERS_STORAGE_KEY);
+      if (!raw) { reminders = []; return; }
+      try { reminders = JSON.parse(raw) || []; } catch { reminders = []; }
+    }
+    function saveReminders() {
+      localStorage.setItem(REMINDERS_STORAGE_KEY, JSON.stringify(reminders));
+    }
+    function renderReminders() {
+      if (!reminders.length) {
+        remindersList.innerHTML = '<div class="empty-text">No reminders added yet.</div>';
+        return;
+      }
+      const sorted = reminders.slice().sort((a, b) => (a.date || "").localeCompare(b.date || ""));
+      remindersList.innerHTML = sorted.map(r => {
+        const displayDate = r.date ? formatDateDDMMYYYY(r.date) : "No date";
+        return `
+        <div class="reminder-item" data-id="${r.id}">
+          <div class="reminder-main">
+            <div class="reminder-title">${r.title}</div>
+            <div class="reminder-date">${displayDate}${r.note ? " • " + r.note : ""}</div>
+          </div>
+          <button class="reminder-delete" title="Delete">✕</button>
+        </div>
+      `;
+      }).join("");
+    }
+    function openReminders() {
+      remindersModal.style.display = "flex";
+      renderReminders();
+    }
+    function closeReminders() {
+      remindersModal.style.display = "none";
+    }
+    remindersCard.addEventListener("click", openReminders);
+    closeRemindersModal.addEventListener("click", closeReminders);
+    remindersModal.addEventListener("click", (e) => {
+      if (e.target === remindersModal) closeReminders();
+    });
+
+    addReminderBtn.addEventListener("click", () => {
+      const date = reminderDateInput.value;
+      const title = reminderTitleInput.value.trim();
+      const note = reminderNoteInput.value.trim();
+      if (!title) return;
+      reminders.push({ id: Date.now().toString(), date, title, note });
+      saveReminders();
+      reminderTitleInput.value = "";
+      reminderNoteInput.value = "";
+      renderReminders();
+    });
+
+    remindersList.addEventListener("click", (e) => {
+      if (!e.target.classList.contains("reminder-delete")) return;
+      const itemEl = e.target.closest(".reminder-item");
+      if (!itemEl) return;
+      const id = itemEl.getAttribute("data-id");
+      reminders = reminders.filter(r => r.id !== id);
+      saveReminders();
+      renderReminders();
+    });
+
+    /* ===== Notes (notepad) ===== */
+    function loadNotes() {
+      const raw = localStorage.getItem(NOTES_STORAGE_KEY);
+      if (!raw) { notes = []; return; }
+      try { notes = JSON.parse(raw) || []; } catch { notes = []; }
+    }
+    function saveNotes() {
+      localStorage.setItem(NOTES_STORAGE_KEY, JSON.stringify(notes));
+    }
+    function formatDateTime(ts) {
+      const d = new Date(ts);
+      if (isNaN(d.getTime())) return "";
+      return d.toLocaleDateString() + " " +
+             d.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+    }
+
+    function renderNotes() {
+      if (!notes.length) {
+        notesList.innerHTML = '<div class="empty-text">No notes yet. Write something above and save.</div>';
+        return;
+      }
+      const sorted = notes.slice().sort((a, b) => b.updatedAt - a.updatedAt);
+      notesList.innerHTML = sorted.map(n => `
+        <div class="note-item ${n.id === currentNoteId ? "active" : ""}" data-id="${n.id}">
+          <div class="note-item-main">
+            <div class="note-preview">${(n.text || "").split("\n")[0] || "(empty note)"}</div>
+            <div class="note-meta">${formatDateTime(n.updatedAt)}</div>
+          </div>
+          <button class="note-delete" title="Delete note">✕</button>
+        </div>
+      `).join("");
+    }
+
+    function openNotes() {
+      notesModal.style.display = "flex";
+      renderNotes();
+      if (!currentNoteId && notes.length > 0) {
+        currentNoteId = notes[0].id;
+        noteEditor.value = notes[0].text;
+        renderNotes();
+      } else if (!notes.length) {
+        currentNoteId = null;
+        noteEditor.value = "";
+      }
+    }
+    function closeNotes() {
+      notesModal.style.display = "none";
+    }
+    notesCard.addEventListener("click", openNotes);
+    closeNotesModal.addEventListener("click", closeNotes);
+    notesModal.addEventListener("click", (e) => {
+      if (e.target === notesModal) closeNotes();
+    });
+
+    newNoteBtn.addEventListener("click", () => {
+      currentNoteId = null;
+      noteEditor.value = "";
+      noteEditor.focus();
+      renderNotes();
+    });
+
+    saveNoteBtn.addEventListener("click", () => {
+      const text = noteEditor.value.trim();
+      if (!text) return;
+      const now = Date.now();
+      if (currentNoteId) {
+        const note = notes.find(n => n.id === currentNoteId);
+        if (note) {
+          note.text = text;
+          note.updatedAt = now;
+        }
+      } else {
+        const id = now.toString();
+        notes.push({ id, text, createdAt: now, updatedAt: now });
+        currentNoteId = id;
+      }
+      saveNotes();
+      renderNotes();
+    });
+
+    notesList.addEventListener("click", (e) => {
+      const deleteBtn = e.target.closest(".note-delete");
+      const itemEl = e.target.closest(".note-item");
+      if (!itemEl) return;
+      const id = itemEl.getAttribute("data-id");
+      if (deleteBtn) {
+        notes = notes.filter(n => n.id !== id);
+        if (currentNoteId === id) {
+          currentNoteId = null;
+          noteEditor.value = "";
+        }
+        saveNotes();
+        renderNotes();
+        return;
+      }
+      const note = notes.find(n => n.id === id);
+      if (note) {
+        currentNoteId = id;
+        noteEditor.value = note.text;
+        renderNotes();
+      }
+    });
+
+    /* ===== Topic daily reminder ===== */
+    function loadTopicDailyReminder() {
+      const raw = localStorage.getItem(TOPIC_DAILY_REMINDER_KEY);
+      if (!raw) { topicDailyReminder = null; return; }
+      try { topicDailyReminder = JSON.parse(raw); } catch { topicDailyReminder = null; }
+    }
+    function saveTopicDailyReminder() {
+      if (topicDailyReminder) {
+        localStorage.setItem(TOPIC_DAILY_REMINDER_KEY, JSON.stringify(topicDailyReminder));
+      } else {
+        localStorage.removeItem(TOPIC_DAILY_REMINDER_KEY);
+      }
+    }
+    function updateTopicReminderSummary() {
+      if (!topicDailyReminder || (!topicDailyReminder.time && !topicDailyReminder.text)) {
+        topicsReminderSummary.textContent = "No daily topic reminder configured yet.";
+        return;
+      }
+      const t = topicDailyReminder;
+      const timePart = t.time ? `at ${t.time}` : "at your chosen time";
+      const textPart = t.text ? `Topics: ${t.text}` : "No topics text saved.";
+      topicsReminderSummary.textContent = `Daily reminder ${timePart}. ${textPart}`;
+    }
+    function openTopicsReminder() {
+      topicsReminderModal.style.display = "flex";
+      if (topicDailyReminder) {
+        topicReminderTimeInput.value = topicDailyReminder.time || "";
+        topicReminderTextInput.value = topicDailyReminder.text || "";
+      } else {
+        topicReminderTimeInput.value = "";
+        topicReminderTextInput.value = "";
+      }
+      updateTopicReminderSummary();
+    }
+    function closeTopicsReminder() {
+      topicsReminderModal.style.display = "none";
+    }
+    topicsReminderCard.addEventListener("click", openTopicsReminder);
+    closeTopicsReminderModal.addEventListener("click", closeTopicsReminder);
+    topicsReminderModal.addEventListener("click", (e) => {
+      if (e.target === topicsReminderModal) closeTopicsReminder();
+    });
+
+    saveTopicsReminderBtn.addEventListener("click", () => {
+      const time = topicReminderTimeInput.value;
+      const text = topicReminderTextInput.value.trim();
+      topicDailyReminder = { time, text };
+      saveTopicDailyReminder();
+      updateTopicReminderSummary();
+      alert("Daily topic reminder saved.");
+    });
+
+    /* ===== Init ===== */
+    loadProfile();
+    loadTopics();
+    loadPlans();
+    loadReminders();
+    loadNotes();
+    loadTopicDailyReminder();
+
+  if ("serviceWorker" in navigator) {
+      window.addEventListener("load", () => {
+        navigator.serviceWorker.register("service-worker.js").catch(console.error);
+      });
+    }
+  </script>
+</body>
+</html>
